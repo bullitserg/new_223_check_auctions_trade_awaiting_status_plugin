@@ -133,10 +133,11 @@ get_trade_auction_info_query = '''SELECT
   a.startHoldingDateTime AS t_start_trade_datetime,
   a.endPhaseOneDateTime AS t_end_phase_one_datetime,
   a.endPhaseTwoDateTime AS t_end_phase_two_datetime,
-  a.phaseId AS t_phase_id
+  a.phaseId AS t_phase_id,
+  a.active AS t_active,
+  a.pid AS t_pid
 FROM auction a
-WHERE a.active = 0
-AND a.statusId = 0
+WHERE a.statusId = 0
 AND a.etpId = %(p_lot_id)s
 ;'''
 

@@ -1,5 +1,5 @@
 import argparse
-from datetime import datetime
+from datetime import datetime, timedelta
 from itertools import count
 from sys import exit as s_exit
 from ets.ets_mysql_lib import MysqlConnection as Mc
@@ -355,6 +355,28 @@ def check_offers_exist_record_t(auction_data):
     return auction_data
 
 
+@set_critical
+@out_printer
+@only_if_trade_record_exists
+def check_active_t(auction_data):
+    """Проверка установки active за час до торгов"""
+    if datetime.now() + timedelta(hours=-1) > auction_data['t_start_trade_datetime'] and not auction_data['t_active']:
+        auction_data['error'] = \
+            'не установлен флаг active за час до торгов' % auction_data
+    return auction_data
+
+
+@set_critical
+@out_printer
+@only_if_trade_record_exists
+def check_pid_t(auction_data):
+    """Проверка установки pid за час до торгов"""
+    if datetime.now() + timedelta(hours=-1) > auction_data['t_start_trade_datetime'] and not auction_data['t_pid']:
+        auction_data['error'] = \
+            'не установлен pid за час до торгов' % auction_data
+    return auction_data
+
+
 if __name__ == '__main__':
     try:
         # инициализируем подключения
@@ -401,6 +423,8 @@ if __name__ == '__main__':
             check_request_count_t(row)
             check_request_ids_t(row)
             check_offers_exist_record_t(row)
+            check_active_t(row)
+            check_pid_t(row)
 
             # если все проверки завершились успешно, то увеличиваем количество ok на единицу
             if not row.get('error_flag'):
@@ -414,6 +438,10 @@ if __name__ == '__main__':
                 print('All OK!')
         else:
             print(EXIT_TEMPLATE % EXIT_DICT)
+
+        cn_procedures.disconnect()
+        cn_catalog.disconnect()
+        cn_trade.disconnect()
 
         s_exit(EXIT_DICT['exit_status'])
 

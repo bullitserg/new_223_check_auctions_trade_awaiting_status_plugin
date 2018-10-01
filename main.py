@@ -166,16 +166,6 @@ def check_procedure_status_p(auction_data):
 
 @set_critical
 @out_printer
-@only_if_catalog_record_exists
-def check_procedure_status_c(auction_data):
-    """Проверка статуса процедуры в каталоге"""
-    if not auction_data['c_procedure_status_id'] == 7:
-        auction_data['error'] = 'некорректный статус процедуры в каталоге'
-    return auction_data
-
-
-@set_critical
-@out_printer
 def check_lot_status_c(auction_data):
     """Проверка статуса лота в каталоге"""
     if not auction_data['c_lot_status_id'] == 31:
@@ -404,7 +394,6 @@ if __name__ == '__main__':
             check_offer_date_p(row)
             check_regulated_datetime_c(row)
             check_procedure_status_p(row)
-            check_procedure_status_c(row)
             check_lot_status_c(row)
 
             check_offer_date_c(row)

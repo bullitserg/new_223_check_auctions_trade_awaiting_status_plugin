@@ -66,7 +66,7 @@ check_protocol_count_query = '''SELECT
   COUNT(pr.id) AS protocol_count
 FROM protocol pr
 WHERE pr.lotId = %(p_lot_id)s
-AND pr.discriminator IN ('fz223-ea1-requestProtocol', 'fz223-ea2-requestProtocol')
+AND pr.discriminator IN ('fz223-ea1-requestProtocol', 'fz223-ea2-requestProtocol', 'fz223-smsp-ea-requestProtocol')
 ;'''
 
 check_protocol_request_status_matching_query = '''SELECT

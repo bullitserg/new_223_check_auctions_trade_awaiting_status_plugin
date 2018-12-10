@@ -38,7 +38,7 @@ def create_parser():
                         help="Номер процедуры")
 
     parser.add_argument('-t', '--type', type=str, default='', required=True,
-                        choices=('223ea1', '223ea2'),
+                        choices=('223ea1', '223ea2', '223smsp_ea'),
                         help="Тип процедуры (обязательный)")
 
     parser.add_argument('-i', '--full_info', action='store_true',
@@ -83,6 +83,17 @@ def only_if_trade_record_exists(func):
             info = func(auction_data)
         else:
             info = auction_data
+        return info
+    return wrapped
+
+
+def ignored_if_smsp(func):
+    """Декоратор игнорирования функции, если не нужно выполнять для SMSP"""
+    def wrapped(auction_data):
+        if namespace.type == '223smsp_ea':
+            info = auction_data
+        else:
+            info = func(auction_data)
         return info
     return wrapped
 
@@ -209,7 +220,7 @@ def check_protocol_count_p(auction_data):
     protocol_count = cn_procedures.execute_query(check_protocol_count_query % auction_data)[0][0]
     if protocol_count == 0:
         auction_data['error'] = 'отсутствует протокол на статусе ожидание торгов'
-    elif protocol_count < 1:
+    elif protocol_count > 1:
         auction_data['error'] = 'несколько протоколов на статусе ожидание торгов'
     return auction_data
 
@@ -334,6 +345,7 @@ def check_request_ids_t(auction_data):
 @set_critical
 @out_printer
 @only_if_trade_record_exists
+@ignored_if_smsp
 def check_offers_exist_record_t(auction_data):
     """Проверка отсутствия записей о ценовых предложениях в торговой БД"""
     offers_info_trade = cn_trade.execute_query(get_offers_info_trade_query % row, dicted=True)
@@ -414,7 +426,6 @@ if __name__ == '__main__':
             check_offers_exist_record_t(row)
             check_active_t(row)
             check_pid_t(row)
-
             # если все проверки завершились успешно, то увеличиваем количество ok на единицу
             if not row.get('error_flag'):
                 EXIT_DICT['ok'] = next(ok_counter)
